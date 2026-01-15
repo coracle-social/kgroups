@@ -1,0 +1,9 @@
+{
+  "files": [],
+  "references": [
+    { "path": "packages/signer" },
+    { "path": "packages/cap" },
+    { "path": "packages/relay" },
+    { "path": "packages/chat" }
+  ]
+}

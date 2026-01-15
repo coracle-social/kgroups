@@ -1,0 +1,31 @@
+{
+  "name": "@nkg/relay",
+  "version": "0.0.1",
+  "description": "NIP-29 relay with capability-based authorization",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "scripts": {
+    "build": "tsc -b --force",
+    "start": "node dist/index.js",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "clean": "rm -rf dist"
+  },
+  "dependencies": {
+    "@nkg/cap": "workspace:*",
+    "@nkg/signer": "workspace:*",
+    "nostr-tools": "^2.10.0",
+    "ws": "^8.16.0"
+  },
+  "devDependencies": {
+    "@types/ws": "^8.5.10",
+    "vitest": "^2.0.0"
+  }
+}

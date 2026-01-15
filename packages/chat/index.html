@@ -1,0 +1,876 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>NKG Chat - Nostr Key Groups</title>
+    <style>
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen,
+          Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
+        background: #1a1a2e;
+        color: #eee;
+        min-height: 100vh;
+      }
+
+      .app {
+        max-width: 600px;
+        margin: 0 auto;
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+      }
+
+      /* Login View */
+      .login-view {
+        padding: 2rem;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        min-height: 100vh;
+      }
+
+      .login-view h1 {
+        font-size: 2.5rem;
+        margin-bottom: 0.5rem;
+        color: #00d9ff;
+      }
+
+      .login-view > p {
+        color: #888;
+        margin-bottom: 2rem;
+      }
+
+      .login-form {
+        width: 100%;
+        max-width: 400px;
+      }
+
+      .form-group {
+        margin-bottom: 1rem;
+      }
+
+      .form-group label {
+        display: block;
+        margin-bottom: 0.5rem;
+        font-size: 0.875rem;
+        color: #aaa;
+      }
+
+      input[type="text"],
+      input[type="password"] {
+        width: 100%;
+        padding: 0.75rem;
+        border: 1px solid #333;
+        border-radius: 8px;
+        background: #16213e;
+        color: #eee;
+        font-size: 1rem;
+      }
+
+      input:focus {
+        outline: none;
+        border-color: #00d9ff;
+      }
+
+      .buttons {
+        margin-top: 1.5rem;
+      }
+
+      button {
+        padding: 0.75rem 1.5rem;
+        border: none;
+        border-radius: 8px;
+        font-size: 1rem;
+        cursor: pointer;
+        transition: all 0.2s;
+      }
+
+      button.primary {
+        background: #00d9ff;
+        color: #000;
+        width: 100%;
+      }
+
+      button.primary:hover {
+        background: #00b8d9;
+      }
+
+      button.secondary {
+        background: #333;
+        color: #eee;
+      }
+
+      button.secondary:hover {
+        background: #444;
+      }
+
+      .error {
+        background: #ff4444;
+        color: white;
+        padding: 0.75rem;
+        border-radius: 8px;
+        margin-bottom: 1rem;
+      }
+
+      .info {
+        margin-top: 3rem;
+        text-align: center;
+        color: #666;
+      }
+
+      .info h3 {
+        margin-bottom: 0.5rem;
+        color: #888;
+      }
+
+      .info a {
+        color: #00d9ff;
+      }
+
+      /* Groups View */
+      .groups-view {
+        display: flex;
+        flex-direction: column;
+        min-height: 100vh;
+      }
+
+      .groups-view header {
+        padding: 1rem;
+        background: #16213e;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      .groups-view header h1 {
+        font-size: 1.5rem;
+      }
+
+      .user-info {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+      }
+
+      .pubkey {
+        font-family: monospace;
+        font-size: 0.875rem;
+        color: #888;
+      }
+
+      button.logout {
+        padding: 0.5rem 1rem;
+        font-size: 0.875rem;
+        background: #333;
+        color: #eee;
+      }
+
+      .groups-list {
+        flex: 1;
+        padding: 1rem;
+        overflow-y: auto;
+      }
+
+      .groups-list .empty {
+        text-align: center;
+        color: #666;
+        padding: 3rem;
+      }
+
+      .group-card {
+        background: #16213e;
+        border-radius: 12px;
+        padding: 1rem;
+        margin-bottom: 0.75rem;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        cursor: pointer;
+        transition: background 0.2s;
+      }
+
+      .group-card:hover {
+        background: #1f2b4d;
+      }
+
+      .group-picture {
+        width: 48px;
+        height: 48px;
+        border-radius: 50%;
+        object-fit: cover;
+      }
+
+      .group-picture.placeholder {
+        background: #00d9ff;
+        color: #000;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        font-size: 1.25rem;
+      }
+
+      .group-info h3 {
+        font-size: 1rem;
+        margin-bottom: 0.25rem;
+      }
+
+      .group-info .about {
+        font-size: 0.875rem;
+        color: #888;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .groups-view .actions {
+        padding: 1rem;
+        background: #16213e;
+        display: flex;
+        gap: 0.75rem;
+      }
+
+      .groups-view .actions button {
+        flex: 1;
+      }
+
+      /* Chat View */
+      .chat-view {
+        display: flex;
+        flex-direction: column;
+        height: 100vh;
+      }
+
+      .chat-view header {
+        padding: 1rem;
+        background: #16213e;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+      }
+
+      button.back {
+        background: transparent;
+        color: #00d9ff;
+        padding: 0.5rem;
+      }
+
+      .chat-view header h2 {
+        flex: 1;
+        font-size: 1.25rem;
+      }
+
+      .group-id {
+        font-family: monospace;
+        font-size: 0.75rem;
+        color: #666;
+      }
+
+      .messages {
+        flex: 1;
+        padding: 1rem;
+        overflow-y: auto;
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+      }
+
+      .messages .empty {
+        text-align: center;
+        color: #666;
+        padding: 3rem;
+      }
+
+      .message-bubble {
+        max-width: 80%;
+        padding: 0.75rem 1rem;
+        border-radius: 16px;
+      }
+
+      .message-bubble.own {
+        align-self: flex-end;
+        background: #00d9ff;
+        color: #000;
+        border-bottom-right-radius: 4px;
+      }
+
+      .message-bubble.other {
+        align-self: flex-start;
+        background: #16213e;
+        border-bottom-left-radius: 4px;
+      }
+
+      .message-bubble .sender {
+        font-size: 0.75rem;
+        font-family: monospace;
+        color: #00d9ff;
+        margin-bottom: 0.25rem;
+      }
+
+      .message-bubble .content {
+        word-wrap: break-word;
+      }
+
+      .message-bubble .time {
+        font-size: 0.7rem;
+        color: inherit;
+        opacity: 0.6;
+        text-align: right;
+        margin-top: 0.25rem;
+      }
+
+      .message-input {
+        padding: 1rem;
+        background: #16213e;
+        display: flex;
+        gap: 0.75rem;
+      }
+
+      .message-input input {
+        flex: 1;
+        padding: 0.75rem;
+        border: 1px solid #333;
+        border-radius: 20px;
+        background: #0f172a;
+        color: #eee;
+        font-size: 1rem;
+      }
+
+      .message-input button.send {
+        background: #00d9ff;
+        color: #000;
+        border-radius: 20px;
+        padding: 0.75rem 1.5rem;
+      }
+
+      .message-input button:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
+
+      /* Loading & Error */
+      .loading-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.5);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 1000;
+      }
+
+      .spinner {
+        width: 48px;
+        height: 48px;
+        border: 4px solid #333;
+        border-top-color: #00d9ff;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+      }
+
+      @keyframes spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+
+      .global-error {
+        position: fixed;
+        top: 1rem;
+        left: 50%;
+        transform: translateX(-50%);
+        background: #ff4444;
+        color: white;
+        padding: 0.75rem 1rem;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        z-index: 1001;
+      }
+
+      .global-error button {
+        background: transparent;
+        color: white;
+        padding: 0.25rem 0.5rem;
+        font-size: 1rem;
+      }
+
+      /* Connection Status Indicator */
+      .connection-status {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        flex-shrink: 0;
+      }
+
+      .connection-status.connected {
+        background: #00ff88;
+        box-shadow: 0 0 6px #00ff88;
+      }
+
+      .connection-status.disconnected {
+        background: #ff4444;
+        box-shadow: 0 0 6px #ff4444;
+      }
+
+      /* Chat header improvements */
+      .chat-view .header-info {
+        flex: 1;
+      }
+
+      .chat-view .header-info h2 {
+        font-size: 1.125rem;
+        margin-bottom: 0.125rem;
+      }
+
+      .chat-view .header-info .group-id {
+        font-family: monospace;
+        font-size: 0.7rem;
+        color: #666;
+      }
+
+      /* Disabled button states */
+      button:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
+
+      input:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
+
+      textarea:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
+
+      /* Create Group View */
+      .create-group-view {
+        display: flex;
+        flex-direction: column;
+        min-height: 100vh;
+      }
+
+      .create-group-view header {
+        padding: 1rem;
+        background: #16213e;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+      }
+
+      .create-group-view header h1 {
+        font-size: 1.5rem;
+        flex: 1;
+      }
+
+      .create-form {
+        flex: 1;
+        padding: 1.5rem;
+        overflow-y: auto;
+      }
+
+      .create-form .form-group {
+        margin-bottom: 1.5rem;
+      }
+
+      .create-form label {
+        display: block;
+        margin-bottom: 0.5rem;
+        font-weight: 500;
+        color: #ccc;
+      }
+
+      .create-form input[type="text"],
+      .create-form input[type="number"] {
+        width: 100%;
+        padding: 0.75rem;
+        border: 1px solid #333;
+        border-radius: 8px;
+        background: #16213e;
+        color: #eee;
+        font-size: 1rem;
+      }
+
+      .create-form textarea {
+        width: 100%;
+        padding: 0.75rem;
+        border: 1px solid #333;
+        border-radius: 8px;
+        background: #16213e;
+        color: #eee;
+        font-size: 0.9rem;
+        font-family: monospace;
+        resize: vertical;
+      }
+
+      .threshold-input {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+      }
+
+      .threshold-input input {
+        width: 80px !important;
+        text-align: center;
+      }
+
+      .help-text {
+        font-size: 0.85rem;
+        color: #888;
+        margin-top: 0.5rem;
+      }
+
+      .info-box {
+        background: #16213e;
+        border: 1px solid #333;
+        border-radius: 8px;
+        padding: 1rem;
+        margin-top: 1rem;
+      }
+
+      .info-box h4 {
+        color: #00d9ff;
+        margin-bottom: 0.5rem;
+        font-size: 0.9rem;
+      }
+
+      .info-box p {
+        font-size: 0.85rem;
+        color: #aaa;
+        margin-bottom: 0.5rem;
+      }
+
+      .info-box p:last-child {
+        margin-bottom: 0;
+      }
+
+      .create-group-view .actions {
+        padding: 1rem;
+        background: #16213e;
+        display: flex;
+        gap: 0.75rem;
+      }
+
+      .create-group-view .actions button {
+        flex: 1;
+      }
+
+      /* DKG Progress */
+      .dkg-progress {
+        flex: 1;
+        padding: 2rem;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .dkg-progress h2 {
+        font-size: 1.5rem;
+        margin-bottom: 2rem;
+      }
+
+      .progress-steps {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+        width: 100%;
+        max-width: 300px;
+        margin-bottom: 2rem;
+      }
+
+      .step {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        padding: 0.75rem;
+        border-radius: 8px;
+        background: #16213e;
+        opacity: 0.5;
+        transition: all 0.3s;
+      }
+
+      .step.active {
+        opacity: 1;
+        background: #1f2b4d;
+        border: 1px solid #00d9ff;
+      }
+
+      .step.completed {
+        opacity: 1;
+        background: #1a3a2e;
+        border: 1px solid #00ff88;
+      }
+
+      .step.failed {
+        opacity: 1;
+        background: #3a1a1a;
+        border: 1px solid #ff4444;
+      }
+
+      .step-icon {
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
+        background: #333;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        font-size: 0.9rem;
+      }
+
+      .step.active .step-icon {
+        background: #00d9ff;
+        color: #000;
+      }
+
+      .step.completed .step-icon {
+        background: #00ff88;
+        color: #000;
+      }
+
+      .step.failed .step-icon {
+        background: #ff4444;
+        color: #fff;
+      }
+
+      .step-label {
+        font-size: 0.9rem;
+      }
+
+      .dkg-progress .success {
+        text-align: center;
+        width: 100%;
+      }
+
+      .dkg-progress .success > p {
+        margin-bottom: 1rem;
+        color: #00ff88;
+        font-size: 1.1rem;
+        font-weight: 500;
+      }
+
+      .completion-info {
+        width: 100%;
+        margin-bottom: 1.5rem;
+      }
+
+      .completion-info .success-text {
+        color: #00ff88;
+        font-size: 0.95rem;
+        margin-bottom: 1rem;
+      }
+
+      .group-pubkey code {
+        display: block;
+        font-family: monospace;
+        font-size: 0.9rem;
+        background: #16213e;
+        padding: 0.5rem 1rem;
+        border-radius: 4px;
+        margin-top: 0.5rem;
+      }
+
+      .session-id-section {
+        margin: 1.5rem 0;
+        width: 100%;
+        padding: 1rem;
+        background: rgba(0, 217, 255, 0.05);
+        border-radius: 8px;
+      }
+
+      .session-id-section .session-label {
+        font-size: 0.85rem;
+        color: #888;
+        margin-bottom: 0.5rem;
+        font-weight: 500;
+      }
+
+      .session-id-box {
+        background: #16213e;
+        border: 1px solid #333;
+        border-radius: 6px;
+        padding: 0.75rem;
+        margin-bottom: 0.5rem;
+        transition: all 0.2s;
+      }
+
+      .session-id-box:hover {
+        background: #1f2b4d;
+        border-color: #00d9ff;
+      }
+
+      .session-id-box code {
+        display: block;
+        font-family: monospace;
+        font-size: 0.75rem;
+        color: #aaa;
+        word-break: break-all;
+        line-height: 1.4;
+      }
+
+      .session-id-section .help-text {
+        font-size: 0.75rem;
+        color: #666;
+        font-style: italic;
+      }
+
+      .group-id-section {
+        margin: 1.5rem 0;
+        width: 100%;
+      }
+
+      .group-id-section > p {
+        font-size: 0.9rem;
+        color: #aaa;
+        margin-bottom: 0.75rem;
+      }
+
+      .group-id-box {
+        background: #16213e;
+        border: 2px solid #00d9ff;
+        border-radius: 8px;
+        padding: 1rem;
+        transition: all 0.2s;
+      }
+
+      .group-id-box:hover {
+        background: #1f2b4d;
+        border-color: #00ff88;
+      }
+
+      .group-id-box code {
+        display: block;
+        font-family: monospace;
+        font-size: 0.85rem;
+        color: #00d9ff;
+        word-break: break-all;
+        line-height: 1.5;
+      }
+
+      .dkg-progress .error-box {
+        text-align: center;
+        color: #ff4444;
+      }
+
+      .dkg-progress .error-box .error-detail {
+        font-size: 0.85rem;
+        color: #ff8888;
+        margin-top: 0.5rem;
+      }
+
+      .dkg-progress .waiting {
+        text-align: center;
+        color: #888;
+      }
+
+      .spinner-small {
+        width: 32px;
+        height: 32px;
+        border: 3px solid #333;
+        border-top-color: #00d9ff;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+        margin: 0 auto 1rem;
+      }
+
+      /* Settings Panel */
+      .settings-panel {
+        background: #16213e;
+        border-bottom: 1px solid #333;
+        padding: 1rem;
+        animation: slideDown 0.2s ease-out;
+      }
+
+      @keyframes slideDown {
+        from {
+          opacity: 0;
+          transform: translateY(-10px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      .settings-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1rem;
+      }
+
+      .settings-header h3 {
+        font-size: 1rem;
+        color: #00d9ff;
+      }
+
+      .settings-header button.close {
+        background: transparent;
+        color: #888;
+        padding: 0.25rem 0.5rem;
+        font-size: 1.25rem;
+      }
+
+      .settings-header button.close:hover {
+        color: #fff;
+      }
+
+      .settings-panel .form-group {
+        margin-bottom: 1rem;
+      }
+
+      .settings-panel .form-group label {
+        display: block;
+        font-size: 0.85rem;
+        color: #888;
+        margin-bottom: 0.5rem;
+      }
+
+      .settings-panel .form-group input {
+        width: 100%;
+        padding: 0.5rem 0.75rem;
+        border: 1px solid #333;
+        border-radius: 6px;
+        background: #0f172a;
+        color: #eee;
+        font-size: 0.9rem;
+      }
+
+      .settings-panel .form-group input:focus {
+        outline: none;
+        border-color: #00d9ff;
+      }
+
+      .settings-actions {
+        display: flex;
+        gap: 0.75rem;
+      }
+
+      .settings-actions button {
+        flex: 1;
+        padding: 0.5rem 1rem;
+        font-size: 0.9rem;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="app"></div>
+    <script type="module" src="/src/index.ts"></script>
+  </body>
+</html>

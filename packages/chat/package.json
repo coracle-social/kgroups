@@ -1,0 +1,23 @@
+{
+  "name": "@nkg/chat",
+  "version": "0.0.1",
+  "description": "Proof of concept chat app with NIP-29 support",
+  "type": "module",
+  "scripts": {
+    "build": "vite build",
+    "dev": "vite",
+    "preview": "vite preview",
+    "clean": "rm -rf dist"
+  },
+  "dependencies": {
+    "@nkg/signer": "workspace:*",
+    "@noble/hashes": "^1.4.0",
+    "mithril": "^2.2.2",
+    "nostr-tools": "^2.10.0"
+  },
+  "devDependencies": {
+    "@types/mithril": "^2.2.6",
+    "typescript": "^5.3.3",
+    "vite": "^5.4.0"
+  }
+}

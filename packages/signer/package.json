@@ -1,0 +1,28 @@
+{
+  "name": "@nkg/signer",
+  "version": "0.0.1",
+  "description": "MPC/DKG key generation and threshold signing for nostr groups",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "scripts": {
+    "build": "tsc -b --force",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "clean": "rm -rf dist"
+  },
+  "dependencies": {
+    "@cmdcode/frost": "^1.0.0",
+    "@noble/hashes": "^1.4.0",
+    "nostr-tools": "^2.10.0"
+  },
+  "devDependencies": {
+    "vitest": "^2.0.0"
+  }
+}
